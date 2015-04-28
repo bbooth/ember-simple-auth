@@ -10,7 +10,7 @@ describe('OAuth2', function() {
     sinon.spy(Ember.$, 'ajax');
   });
 
-  describe('initilization', function() {
+  describe('initialization', function() {
     it('assigns serverTokenEndpoint from the configuration object', function() {
       Configuration.serverTokenEndpoint = 'serverTokenEndpoint';
 
@@ -27,6 +27,12 @@ describe('OAuth2', function() {
       Configuration.refreshAccessTokens = false;
 
       expect(OAuth2.create().refreshAccessTokens).to.be.false;
+    });
+
+    it('assigns clientId from the configuration object', function() {
+      Configuration.clientId = "test-client";
+
+      expect(OAuth2.create().clientId).to.be.eq('test-client');
     });
 
     afterEach(function() {
@@ -165,6 +171,17 @@ describe('OAuth2', function() {
           dataType:    'json',
           contentType: 'application/x-www-form-urlencoded'
         });
+        done();
+      });
+    });
+
+    it('sends a client_id to the token endpoint', function(done) {
+      this.authenticator.set('clientId', 'test-client');
+      this.authenticator.authenticate({ identification: 'username', password: 'password' });
+
+      Ember.run.next(function() {
+        console.log(Ember.$.ajax.getCall(0).args[0].data);
+        expect(Ember.$.ajax.getCall(0).args[0].data.client_id).to.eql('test-client');
         done();
       });
     });

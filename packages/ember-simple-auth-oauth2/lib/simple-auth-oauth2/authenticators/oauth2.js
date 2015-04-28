@@ -28,6 +28,18 @@ export default Base.extend({
   */
 
   /**
+    The client_id to be sent to the authorization server
+
+    This value can be configured via
+    [`SimpleAuth.Configuration.OAuth2#clientId`](#SimpleAuth-Configuration-OAuth2-clientId).
+
+    @property clientId
+    @type String
+    @default null
+  */
+  clientId: null,
+
+  /**
     The endpoint on the server the authenticator acquires the access token
     from.
 
@@ -79,6 +91,7 @@ export default Base.extend({
     this.serverTokenEndpoint           = Configuration.serverTokenEndpoint;
     this.serverTokenRevocationEndpoint = Configuration.serverTokenRevocationEndpoint;
     this.refreshAccessTokens           = Configuration.refreshAccessTokens;
+    this.clientId                      = Configuration.clientId;
   },
 
   /**
@@ -146,6 +159,9 @@ export default Base.extend({
     var _this = this;
     return new Ember.RSVP.Promise(function(resolve, reject) {
       var data = { grant_type: 'password', username: options.identification, password: options.password };
+      if(!Ember.isEmpty(_this.clientId)) {
+        Ember.merge(data, {client_id: _this.clientId});
+      }
       if (!Ember.isEmpty(options.scope)) {
         var scopesString = Ember.makeArray(options.scope).join(' ');
         Ember.merge(data, { scope: scopesString });
@@ -190,9 +206,11 @@ export default Base.extend({
         Ember.A(['access_token', 'refresh_token']).forEach(function(tokenType) {
           var token = data[tokenType];
           if (!Ember.isEmpty(token)) {
-            requests.push(_this.makeRequest(_this.serverTokenRevocationEndpoint, {
-              token_type_hint: tokenType, token: token
-            }));
+            var requestData = {token_type_hint: tokenType, token: token};
+            if(!Ember.isEmpty(_this.clientId)) {
+              requestData.client_id = _this.clientId;
+            }
+            requests.push(_this.makeRequest(_this.serverTokenRevocationEndpoint, requestData));
           }
         });
         Ember.$.when.apply(Ember.$, requests).always(function(responses) {
@@ -256,6 +274,9 @@ export default Base.extend({
   refreshAccessToken: function(expiresIn, refreshToken) {
     var _this = this;
     var data  = { grant_type: 'refresh_token', refresh_token: refreshToken };
+    if(!Ember.isEmpty(_this.clientId)) {
+      Ember.merge(data, {client_id: this.client_id});
+    }
     return new Ember.RSVP.Promise(function(resolve, reject) {
       _this.makeRequest(_this.serverTokenEndpoint, data).then(function(response) {
         Ember.run(function() {
