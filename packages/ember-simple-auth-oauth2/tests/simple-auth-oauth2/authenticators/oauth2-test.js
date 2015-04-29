@@ -175,13 +175,19 @@ describe('OAuth2', function() {
       });
     });
 
-    it('sends a client_id to the token endpoint', function(done) {
+    it('sends an AJAX request to the token endpoint with client_id Basic Auth header', function(done) {
       this.authenticator.set('clientId', 'test-client');
       this.authenticator.authenticate({ identification: 'username', password: 'password' });
 
       Ember.run.next(function() {
-        console.log(Ember.$.ajax.getCall(0).args[0].headers);
-        expect(Ember.$.ajax.getCall(0).args[0].headers.Authorization).to.eql('Basic: dGVzdC1jbGllbnQ6');
+        expect(Ember.$.ajax.getCall(0).args[0]).to.eql({
+          url:         '/token',
+          type:        'POST',
+          data:        { grant_type: 'password', username: 'username', password: 'password' },
+          dataType:    'json',
+          contentType: 'application/x-www-form-urlencoded',
+          headers:     {Authorization: 'Basic dGVzdC1jbGllbnQ6'}
+        });
         done();
       });
     });

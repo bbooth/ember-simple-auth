@@ -159,9 +159,6 @@ export default Base.extend({
     var _this = this;
     return new Ember.RSVP.Promise(function(resolve, reject) {
       var data = { grant_type: 'password', username: options.identification, password: options.password };
-      if(!Ember.isEmpty(_this.clientId)) {
-        Ember.merge(data, {client_id: _this.clientId});
-      }
       if (!Ember.isEmpty(options.scope)) {
         var scopesString = Ember.makeArray(options.scope).join(' ');
         Ember.merge(data, { scope: scopesString });
@@ -207,9 +204,6 @@ export default Base.extend({
           var token = data[tokenType];
           if (!Ember.isEmpty(token)) {
             var requestData = {token_type_hint: tokenType, token: token};
-            if(!Ember.isEmpty(_this.clientId)) {
-              requestData.client_id = _this.clientId;
-            }
             requests.push(_this.makeRequest(_this.serverTokenRevocationEndpoint, requestData));
           }
         });
@@ -276,9 +270,6 @@ export default Base.extend({
   refreshAccessToken: function(expiresIn, refreshToken) {
     var _this = this;
     var data  = { grant_type: 'refresh_token', refresh_token: refreshToken };
-    if(!Ember.isEmpty(_this.clientId)) {
-      Ember.merge(data, {client_id: this.client_id});
-    }
     return new Ember.RSVP.Promise(function(resolve, reject) {
       _this.makeRequest(_this.serverTokenEndpoint, data).then(function(response) {
         Ember.run(function() {
