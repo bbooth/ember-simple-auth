@@ -180,8 +180,8 @@ describe('OAuth2', function() {
       this.authenticator.authenticate({ identification: 'username', password: 'password' });
 
       Ember.run.next(function() {
-        console.log(Ember.$.ajax.getCall(0).args[0].data);
-        expect(Ember.$.ajax.getCall(0).args[0].data.client_id).to.eql('test-client');
+        console.log(Ember.$.ajax.getCall(0).args[0].headers);
+        expect(Ember.$.ajax.getCall(0).args[0].headers.Authorization).to.eql('Basic: dGVzdC1jbGllbnQ6');
         done();
       });
     });
